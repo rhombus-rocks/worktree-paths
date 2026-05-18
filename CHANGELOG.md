@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/fnrhombus/claude-code-worktree-paths/compare/claude-code-worktree-paths-v1.0.1...claude-code-worktree-paths-v1.0.2) (2026-05-18)
+
+
+### Bug Fixes
+
+* emit raw worktree path on stdout instead of JSON envelope ([#15](https://github.com/fnrhombus/claude-code-worktree-paths/issues/15)) ([b2d7a2d](https://github.com/fnrhombus/claude-code-worktree-paths/commit/b2d7a2dc65510cfb234a506a897eefbeeb65f405))
+
 ## [1.0.1](https://github.com/fnrhombus/claude-code-worktree-paths/compare/claude-code-worktree-paths-v1.0.0...claude-code-worktree-paths-v1.0.1) (2026-05-18)
 
 
