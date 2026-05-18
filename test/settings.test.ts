@@ -54,12 +54,12 @@ describe("mergeRepoSettings", () => {
       repoSettings: { branchTemplate: "project-branch" },
     });
     const local = write("local.json", {
-      repoSettings: { gateEnvVar: "FOO" },
+      repoSettings: { cloneTemplate: "local-clone" },
     });
     deepStrictEqual(mergeRepoSettings([user, project, local]), {
       worktreeTemplate: "user-path",
       branchTemplate: "project-branch",
-      gateEnvVar: "FOO",
+      cloneTemplate: "local-clone",
     });
   });
 
@@ -156,13 +156,13 @@ describe("loadSettings", () => {
     writeFileSync(
       join(projectRoot, ".claude", "settings.local.json"),
       JSON.stringify({
-        repoSettings: { gateEnvVar: "LOCAL_FLAG" },
+        repoSettings: { cloneTemplate: "local-clone" },
       }),
     );
     deepStrictEqual(loadSettings(projectRoot), {
       worktreeTemplate: "user-path",
       branchTemplate: "project-branch",
-      gateEnvVar: "LOCAL_FLAG",
+      cloneTemplate: "local-clone",
     });
   });
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 // claude-code-worktree-paths — WorktreeCreate hook with templated path/branch.
-// Reads `repoSettings.{worktreeTemplate,branchTemplate,gateEnvVar}` from
-// Claude Code's four settings tiers (managed > local > project > user,
-// shallow-merged per field — see src/settings.ts). Defaults match Claude
-// Code's native behavior, so installing without configuring is a no-op.
+// Reads `repoSettings.{worktreeTemplate,branchTemplate}` from Claude Code's
+// four settings tiers (managed > local > project > user, shallow-merged per
+// field — see src/settings.ts). Defaults match Claude Code's native behavior,
+// so installing without configuring is a no-op.
 //
 // Performance: avoids the @fnrhombus/claude-code-hooks runtime (its dispatch/
 // abstraction layer adds parse cost we don't need for a single-event hook),
@@ -52,15 +52,8 @@ function main(): void {
   // Settings load happens after repoRoot is known so the project + local
   // tiers anchor to the same directory Claude Code resolves them against.
   const settings = loadSettings(repoRoot);
-  const gateUnsatisfied =
-    settings.gateEnvVar !== undefined && !process.env[settings.gateEnvVar];
-
-  const worktreeTpl = gateUnsatisfied
-    ? DEFAULT_WORKTREE_TEMPLATE
-    : settings.worktreeTemplate ?? DEFAULT_WORKTREE_TEMPLATE;
-  const branchTpl = gateUnsatisfied
-    ? DEFAULT_BRANCH_TEMPLATE
-    : settings.branchTemplate ?? DEFAULT_BRANCH_TEMPLATE;
+  const worktreeTpl = settings.worktreeTemplate ?? DEFAULT_WORKTREE_TEMPLATE;
+  const branchTpl = settings.branchTemplate ?? DEFAULT_BRANCH_TEMPLATE;
 
   // Lazy: skip the git remote fork unless the templates actually need it.
   const needRemote = remoteVarsUsed(worktreeTpl) || remoteVarsUsed(branchTpl);

@@ -36,17 +36,17 @@ Add a `repoSettings` block to any [Claude Code settings file](https://code.claud
 "repoSettings": {
   "worktreeTemplate": "~/src/{repo}@{owner}+{branch}",
   "branchTemplate":   "{input}",
-  "cloneTemplate":    "~/src/{repo}@{owner}",
-  "gateEnvVar":       "FNCLAUDE_INVOCATION"
+  "cloneTemplate":    "~/src/{repo}@{owner}"
 }
 ```
 
-All four keys are optional. Omit any you don't need.
+All three keys are optional. Omit any you don't need.
 
 - `worktreeTemplate` — where the worktree directory lands. Read by this plugin.
 - `branchTemplate` — what the worktree's branch is named. Read by this plugin.
 - `cloneTemplate` — where clones land. **Read by [fnclaude](https://github.com/fnrhombus/fnclaude), not this plugin** — included here so the schema is centrally documented. Defining it without fnclaude installed is harmless (the plugin ignores it).
-- `gateEnvVar` — name of an env var; templates only apply when that var is present in the process invoking Claude. Lets a single Claude install have two behaviors.
+
+To disable this plugin in a specific project or on a specific machine, use Claude Code's `enabledPlugins` setting in the appropriate tier — e.g. `"enabledPlugins": { "claude-code-worktree-paths@fnrhombus-plugins": false }` in `<repo>/.claude/settings.local.json`. ([docs](https://code.claude.com/docs/en/settings#enabledplugins))
 
 ### Scopes
 
@@ -119,12 +119,6 @@ These match Claude Code's native behavior exactly.
 - Anything else — relative to `git rev-parse --show-toplevel`.
 
 So `.claude/worktrees/{input}`, `../{repo}+{input}`, and `~/src/{repo}+{input}` all work.
-
-### Gate
-
-`gateEnvVar` is optional. If set, the templates only apply when that environment variable is present in the process that invoked Claude. Without it, the plugin falls back to Claude's defaults. This lets a single Claude install have two behaviors — custom layout when launched via your wrapper, default when launched directly.
-
-If `gateEnvVar` is omitted, templates always apply.
 
 ## No-remote repos
 
