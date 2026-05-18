@@ -13,6 +13,8 @@ Claude Code plugin: customize where `--worktree` worktrees go and what branch th
 
 The branch protection enforces this — you can't bypass it locally even if you forget.
 
+**Don't stack PRs.** This repo's `auto-merge.yml` enables auto-merge on every non-draft PR, and with no required status checks, `--auto` degrades to an immediate merge as soon as the PR is mergeable. A stacked PR (base = another feature branch instead of `main`) is trivially mergeable into its declared base, so it squashes into the wrong target instantly — before the underlying PR lands on main. `auto-merge.yml` now guards on `base.ref == 'main'` to prevent this, but the underlying point holds: sequence PRs through main, don't stack.
+
 ## Release policy
 
 Versioning is automated by [release-please](https://github.com/googleapis/release-please). **Don't bump versions manually.**
