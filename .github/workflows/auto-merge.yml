@@ -1,9 +1,15 @@
 name: auto-merge
 
-# Enable auto-merge (squash) on every non-draft PR as soon as it opens.
-# Branch protection on main holds the actual merge until any required
-# status checks are green; with no required checks, --auto degrades to an
-# immediate merge once the PR is mergeable.
+# Enable auto-merge (squash) on every non-draft PR targeting main as soon
+# as it opens. Branch protection on main holds the actual merge until any
+# required status checks are green; with no required checks, --auto
+# degrades to an immediate merge once the PR is mergeable.
+#
+# Only PRs whose base is `main` are eligible. A PR with a non-main base
+# (i.e. a stacked PR) is trivially mergeable into its declared base —
+# enabling auto-merge there would squash the PR into the wrong target
+# instantly, before the underlying stack lands on main. Stacking is
+# incompatible with this repo's eager-auto-merge model; gate explicitly.
 #
 # This workflow itself is NOT in the required-status-checks list — its
 # success isn't a gate; it just registers intent to merge. If it fails
@@ -20,7 +26,7 @@ permissions:
 
 jobs:
   enable-auto-merge:
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false && github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
     steps:
       - name: Enable auto-merge (squash)
