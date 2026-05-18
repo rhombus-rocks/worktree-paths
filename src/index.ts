@@ -142,14 +142,11 @@ function main(): void {
     );
   }
 
-  process.stdout.write(
-    JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: "WorktreeCreate",
-        worktreePath: targetDir,
-      },
-    }),
-  );
+  // Command-hook contract: print the absolute worktree path on stdout.
+  // The hookSpecificOutput JSON envelope is the HTTP-hook shape; emitting it
+  // from a command hook makes Claude Code chdir to the literal JSON string.
+  // See https://code.claude.com/docs/en/hooks#worktreecreate-output.
+  process.stdout.write(targetDir);
 }
 
 function remoteVarsUsed(tpl: string): boolean {
