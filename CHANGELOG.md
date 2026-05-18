@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/fnrhombus/claude-code-worktree-paths/compare/claude-code-worktree-paths-v1.0.2...claude-code-worktree-paths-v2.0.0) (2026-05-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* removed the `repoSettings.gateEnvVar` setting. To disable the plugin in a specific project or on a specific machine, use Claude Code's native `enabledPlugins` setting instead.
+
+### Features
+
+* remove gateEnvVar setting in favor of enabledPlugins ([#18](https://github.com/fnrhombus/claude-code-worktree-paths/issues/18)) ([6dac43d](https://github.com/fnrhombus/claude-code-worktree-paths/commit/6dac43d06745ef63e7bdbdd69cea8c8fe821cef9))
+
 ## [1.0.2](https://github.com/fnrhombus/claude-code-worktree-paths/compare/claude-code-worktree-paths-v1.0.1...claude-code-worktree-paths-v1.0.2) (2026-05-18)
 
 
