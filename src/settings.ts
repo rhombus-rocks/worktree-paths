@@ -22,8 +22,6 @@ export interface RepoSettings {
    * the consumer.
    */
   cloneTemplate?: string;
-  /** Env var that gates whether this plugin's templates apply at all. */
-  gateEnvVar?: string;
 }
 
 export function loadSettings(projectRoot: string): RepoSettings {
