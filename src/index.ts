@@ -13,7 +13,7 @@
 // synchronous path between user keystroke and worktree creation; every
 // fork-saved is felt.
 //
-// https://github.com/fnrhombus/claude-code-worktree-paths
+// https://github.com/fnclaude/worktree-paths
 
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
