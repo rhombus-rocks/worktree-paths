@@ -31,11 +31,7 @@ After a normal PR merges to `main`, the release-please workflow opens a `chore(m
 
 ## After a release
 
-The marketplace at `rhombus-rocks/claude-plugins` discovers new versions on its daily cron. To force-refresh immediately:
-
-```bash
-gh workflow run update-marketplace.yml --repo rhombus-rocks/claude-plugins
-```
+Nothing. The marketplace at `rhombus-rocks/claude-plugins` pins this plugin's `main` branch, so a merged release is live for `/plugin install` and `/plugin update` the moment the release PR lands.
 
 ## Building
 
@@ -53,5 +49,4 @@ The build is a single bundled CJS file (~60 KB, now that `confbox`'s JSONC/TOML/
 - **Don't bump version manually** — release-please owns it.
 - **Don't commit to `main` directly** — branch protection blocks it.
 - **Don't skip the `dist/` commit.** No CI rebuilds for users; the file in the repo is what runs.
-- **Don't hand-edit `rhombus-rocks/claude-plugins/marketplace.json`** — the cron overwrites it. Update this repo and propagation happens.
-- **Don't remove the `claude-code-plugin` topic** on the GitHub repo — without it, the marketplace can't discover the plugin.
+- **Don't edit `rhombus-rocks/claude-plugins/marketplace.json` for a version bump** — it pins `main`, not a tag, so releases here need no marketplace change.
