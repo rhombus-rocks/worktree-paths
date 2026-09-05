@@ -1,6 +1,6 @@
-# claude-code-worktree-paths
+# worktree-paths
 
-Claude Code plugin: customize where `--worktree` worktrees go and what branch they get, via templates in `~/.claude/settings.json`. See `README.md` for the user-facing docs.
+Claude Code plugin: customize where `--worktree` worktrees go and what branch they get, via templates in the shared rhombus.rocks config (`~/.config/rhombus.rocks/config.json`). See `README.md` for the user-facing docs.
 
 ## Branch policy
 
@@ -31,10 +31,10 @@ After a normal PR merges to `main`, the release-please workflow opens a `chore(m
 
 ## After a release
 
-The marketplace at `fnrhombus/claude-plugins` discovers new versions on its daily cron. To force-refresh immediately:
+The marketplace at `rhombus-rocks/claude-plugins` discovers new versions on its daily cron. To force-refresh immediately:
 
 ```bash
-gh workflow run update-marketplace.yml --repo fnrhombus/claude-plugins
+gh workflow run update-marketplace.yml --repo rhombus-rocks/claude-plugins
 ```
 
 ## Building
@@ -46,12 +46,12 @@ npm run typecheck   # tsc --noEmit, strict
 npm run build       # tsup, bundles to dist/index.js
 ```
 
-The build is intentionally tiny (~3 KB, single CJS file) — the plugin is on the synchronous path between user keystroke and worktree creation, and every saved millisecond is felt. Don't add the `@fnrhombus/claude-code-hooks` runtime back unless you have a reason; the inline stdin/JSON protocol in `src/index.ts` is faster.
+The build is a single bundled CJS file (~60 KB, now that `confbox`'s JSONC/TOML/YAML parsers are bundled in for the shared config reader) — the plugin is on the synchronous path between user keystroke and worktree creation, and every saved millisecond is felt. Don't add a hook-dispatch runtime dependency back unless you have a reason; the inline stdin/JSON protocol in `src/index.ts` is faster.
 
 ## What NOT to do
 
 - **Don't bump version manually** — release-please owns it.
 - **Don't commit to `main` directly** — branch protection blocks it.
 - **Don't skip the `dist/` commit.** No CI rebuilds for users; the file in the repo is what runs.
-- **Don't hand-edit `fnrhombus/claude-plugins/marketplace.json`** — the cron overwrites it. Update this repo and propagation happens.
+- **Don't hand-edit `rhombus-rocks/claude-plugins/marketplace.json`** — the cron overwrites it. Update this repo and propagation happens.
 - **Don't remove the `claude-code-plugin` topic** on the GitHub repo — without it, the marketplace can't discover the plugin.

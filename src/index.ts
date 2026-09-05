@@ -1,28 +1,26 @@
 #!/usr/bin/env node
 
-// claude-code-worktree-paths — WorktreeCreate hook with templated path/branch.
-// Reads `repoSettings.{worktreeTemplate,branchTemplate}` from Claude Code's
-// four settings tiers (managed > local > project > user, shallow-merged per
-// field — see src/settings.ts). Defaults match Claude Code's native behavior,
-// so installing without configuring is a no-op.
+// worktree-paths — WorktreeCreate hook with templated path/branch.
+// Reads `repos.{worktreeTemplate,branchTemplate,hostAliases}` from the
+// shared rhombus.rocks config (see src/config.ts). Defaults match Claude
+// Code's native behavior, so installing without configuring is a no-op.
 //
-// Performance: avoids the @fnrhombus/claude-code-hooks runtime (its dispatch/
-// abstraction layer adds parse cost we don't need for a single-event hook),
-// uses CLAUDE_PROJECT_DIR to skip `git rev-parse`, and skips `git remote` when
-// templates don't reference {owner}/{repo}/{host*}. The plugin is on the
-// synchronous path between user keystroke and worktree creation; every
-// fork-saved is felt.
+// Performance: no runtime abstraction layer over the raw stdin/JSON hook
+// protocol, uses CLAUDE_PROJECT_DIR to skip `git rev-parse`, and skips `git
+// remote` when templates don't reference {owner}/{repo}/{host*}. The plugin
+// is on the synchronous path between user keystroke and worktree creation;
+// every fork saved is felt.
 //
-// https://github.com/fnclaude/worktree-paths
+// https://github.com/rhombus-rocks/worktree-paths
 
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, isAbsolute, join, normalize } from "node:path";
 
-import { loadHostAliases, missingHostShortError } from "./host-aliases";
+import { loadReposConfig } from "./config";
+import { missingHostShortError, resolveHostAliases } from "./host-aliases";
 import { sanitizeForPath } from "./sanitize";
-import { loadSettings } from "./settings";
 
 const DEFAULT_WORKTREE_TEMPLATE = ".claude/worktrees/{input}";
 const DEFAULT_BRANCH_TEMPLATE = "worktree-{input}";
@@ -49,11 +47,9 @@ function main(): void {
   const repoDir = basename(repoRoot);
   const cwdLeaf = basename(cwd);
 
-  // Settings load happens after repoRoot is known so the project + local
-  // tiers anchor to the same directory Claude Code resolves them against.
-  const settings = loadSettings(repoRoot);
-  const worktreeTpl = settings.worktreeTemplate ?? DEFAULT_WORKTREE_TEMPLATE;
-  const branchTpl = settings.branchTemplate ?? DEFAULT_BRANCH_TEMPLATE;
+  const config = loadReposConfig();
+  const worktreeTpl = config.worktreeTemplate ?? DEFAULT_WORKTREE_TEMPLATE;
+  const branchTpl = config.branchTemplate ?? DEFAULT_BRANCH_TEMPLATE;
 
   // Lazy: skip the git remote fork unless the templates actually need it.
   const needRemote = remoteVarsUsed(worktreeTpl) || remoteVarsUsed(branchTpl);
@@ -69,15 +65,7 @@ function main(): void {
   const host = remote?.host ?? "";
   const hostPlain = host.includes(".") ? host.split(".")[0]! : host;
 
-  // Lazy LUT load + resolution: only fires if a template actually uses
-  // {host-short}. Keeps the no-config path free of file IO.
-  const aliasesGetter = (() => {
-    let cached: Record<string, string> | null = null;
-    return () => {
-      if (cached === null) cached = loadHostAliases();
-      return cached;
-    };
-  })();
+  const hostAliases = resolveHostAliases(config.hostAliases);
 
   const vars: Record<string, () => string> = {
     input: () => wtName,
@@ -89,9 +77,8 @@ function main(): void {
     host: () => host,
     "host-plain": () => hostPlain,
     "host-short": () => {
-      const map = aliasesGetter();
-      if (!(host in map)) throw missingHostShortError(host);
-      return map[host]!;
+      if (!(host in hostAliases)) throw missingHostShortError(host);
+      return hostAliases[host]!;
     },
   };
 
@@ -119,7 +106,7 @@ function main(): void {
       ];
 
   process.stderr.write(
-    `claude-code-worktree-paths: ${branchExists ? "checkout" : "create"} '${branch}' at ${targetDir}\n`,
+    `worktree-paths: ${branchExists ? "checkout" : "create"} '${branch}' at ${targetDir}\n`,
   );
 
   try {
@@ -230,7 +217,7 @@ try {
   main();
 } catch (err) {
   process.stderr.write(
-    `claude-code-worktree-paths: ${(err as Error).message}\n`,
+    `worktree-paths: ${(err as Error).message}\n`,
   );
   process.exit(2);
 }
