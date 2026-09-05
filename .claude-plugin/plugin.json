@@ -1,6 +1,6 @@
 {
   "name": "worktree-paths",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Claude Code plugin: customize where `--worktree` worktrees go and what branch they get, via templates in the shared rhombus.rocks config.",
   "author": {
     "name": "rhombus-rocks"
