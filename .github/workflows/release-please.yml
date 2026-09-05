@@ -41,7 +41,7 @@ jobs:
       # When release-please actually created a release (release_created=true
       # on its second run, after the release PR is merged and the tag is
       # cut), dispatch the marketplace's rebuild workflow so the new
-      # plugin tag/version lands in fnrhombus/claude-plugins' marketplace.json
+      # plugin tag/version lands in rhombus-rocks/claude-plugins' marketplace.json
       # within seconds instead of waiting for its daily cron.
       - name: Trigger marketplace rebuild
         if: ${{ steps.release.outputs.release_created == 'true' }}
@@ -49,5 +49,5 @@ jobs:
           GH_TOKEN: ${{ secrets.AUTOMERGE_PAT }}
         run: |
           gh workflow run update-marketplace.yml \
-            --repo fnrhombus/claude-plugins
+            --repo rhombus-rocks/claude-plugins
           echo "dispatched marketplace rebuild after release ${{ steps.release.outputs.tag_name }}"

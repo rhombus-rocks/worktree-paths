@@ -1,10 +1,10 @@
 {
-  "name": "claude-code-worktree-paths",
+  "name": "worktree-paths",
   "version": "2.0.0",
-  "description": "Claude Code plugin: customize where `--worktree` worktrees go and what branch they get, via path/branch templates in settings.json.",
+  "description": "Claude Code plugin: customize where `--worktree` worktrees go and what branch they get, via path/branch templates in the shared rhombus.rocks config.",
   "main": "dist/index.js",
   "bin": {
-    "claude-code-worktree-paths": "./dist/index.js"
+    "worktree-paths": "./dist/index.js"
   },
   "files": [
     "dist",
@@ -20,16 +20,16 @@
     "developer-tools",
     "ai-coding"
   ],
-  "author": "fnrhombus",
+  "author": "rhombus-rocks",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fnclaude/worktree-paths.git"
+    "url": "git+https://github.com/rhombus-rocks/worktree-paths.git"
   },
   "bugs": {
-    "url": "https://github.com/fnclaude/worktree-paths/issues"
+    "url": "https://github.com/rhombus-rocks/worktree-paths/issues"
   },
-  "homepage": "https://github.com/fnclaude/worktree-paths#readme",
+  "homepage": "https://github.com/rhombus-rocks/worktree-paths#readme",
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
@@ -39,7 +39,6 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@fnrhombus/claude-code-hooks": "^0.1.1",
     "@types/node": "^22.0.0",
     "tsup": "^8.3.0",
     "tsx": "^4.21.0",
@@ -47,5 +46,8 @@
   },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "confbox": "^0.3.1"
   }
 }

@@ -1,10 +1,10 @@
-# claude-code-worktree-paths
+# worktree-paths
 
 **`claude --worktree foo` puts worktrees in the wrong place. Template your way out.**
 
-[![license](https://img.shields.io/npm/l/claude-code-worktree-paths)](./LICENSE)
+[![license](https://img.shields.io/npm/l/worktree-paths)](./LICENSE)
 
-Claude Code's default `WorktreeCreate` behavior drops a worktree at `.claude/worktrees/<name>/` inside the repo, on a branch named `worktree-<name>`. If you want worktrees somewhere else — as siblings in `~/src/`, under a different naming scheme, on a clean branch name — this plugin lets you template both the path and the branch via `~/.claude/settings.json`.
+Claude Code's default `WorktreeCreate` behavior drops a worktree at `.claude/worktrees/<name>/` inside the repo, on a branch named `worktree-<name>`. If you want worktrees somewhere else — as siblings in `~/src/`, under a different naming scheme, on a clean branch name — this plugin lets you template both the path and the branch via the shared [rhombus.rocks config](#config).
 
 ## Before / after
 
@@ -30,36 +30,30 @@ Installing without configuring is a no-op.
 
 ## Config
 
-Add a `repoSettings` block to any [Claude Code settings file](https://code.claude.com/docs/en/settings):
+This plugin reads from the shared `rhombus.rocks` config file, at `$XDG_CONFIG_HOME/rhombus.rocks/config.json` (default `~/.config/rhombus.rocks/config.json`). The same file is shared across the rhombus.rocks toolset (`fnc` and `fngit`) — `config.jsonc`, `config.toml`, and `config.yaml` are also accepted, in that order of precedence, whichever exists first:
 
 ```json
-"repoSettings": {
-  "worktreeTemplate": "~/src/{repo}@{owner}+{branch}",
-  "branchTemplate":   "{input}",
-  "cloneTemplate":    "~/src/{repo}@{owner}"
+{
+  "$schema": "https://json.schemastore.org/rhombus-rocks-config.json",
+  "repos": {
+    "cloneTemplate": "~/src/{repo}@{owner}",
+    "worktreeTemplate": "~/src/{repo}@{owner}+{branch}",
+    "branchTemplate": "{input}",
+    "hostAliases": { "git.example.com": "ex" }
+  }
 }
 ```
 
-All three keys are optional. Omit any you don't need.
+All keys under `repos` are optional. Omit any you don't need.
 
-- `worktreeTemplate` — where the worktree directory lands. Read by this plugin.
-- `branchTemplate` — what the worktree's branch is named. Read by this plugin.
-- `cloneTemplate` — where clones land. **Read by [fnclaude](https://github.com/fnrhombus/fnclaude), not this plugin** — included here so the schema is centrally documented. Defining it without fnclaude installed is harmless (the plugin ignores it).
+- `repos.worktreeTemplate` — where the worktree directory lands. Read by this plugin.
+- `repos.branchTemplate` — what the worktree's branch is named. Read by this plugin.
+- `repos.cloneTemplate` — where clones land. **Read by `fnc`, not this plugin** — included here so the schema is centrally documented. Defining it without `fnc` installed is harmless (the plugin ignores it).
+- `repos.hostAliases` — per-host overrides for `{host-short}` (see [below](#host-short-aliases)).
 
-To disable this plugin in a specific project or on a specific machine, use Claude Code's `enabledPlugins` setting in the appropriate tier — e.g. `"enabledPlugins": { "claude-code-worktree-paths@fnrhombus-plugins": false }` in `<repo>/.claude/settings.local.json`. ([docs](https://code.claude.com/docs/en/settings#enabledplugins))
+There is no runtime schema validation: a missing or wrong-shaped field just makes the plugin behave like vanilla Claude Code for that field, rather than failing the whole load.
 
-### Scopes
-
-The plugin reads `repoSettings` from the same four tiers Claude Code itself uses, in the same precedence order (highest → lowest):
-
-| Tier | Path | Use for |
-|---|---|---|
-| Managed | `/etc/claude-code/managed-settings.json` (Linux), `/Library/Application Support/ClaudeCode/managed-settings.json` (macOS), `%ProgramData%\ClaudeCode\managed-settings.json` (Windows) | IT-deployed overrides |
-| Local | `<repo>/.claude/settings.local.json` | Your local-only project tweaks (gitignored) |
-| Project | `<repo>/.claude/settings.json` | Team-shared per-project layout (committed) |
-| User | `~/.claude/settings.json` | Your default across all projects |
-
-Tiers are **shallow-merged per field**, not whole-block-replaced. So a project that sets only `branchTemplate` keeps your user-level `worktreeTemplate` intact — set just the keys you want to override. (This is a small deviation from Claude Code's default whole-key override, picked because per-template independence is what people actually want here.)
+To disable this plugin in a specific project or on a specific machine, use Claude Code's `enabledPlugins` setting in the appropriate tier — e.g. `"enabledPlugins": { "worktree-paths@rhombus-rocks-claude-plugins": false }` in `<repo>/.claude/settings.local.json`. ([docs](https://code.claude.com/docs/en/settings#enabledplugins))
 
 ### Placeholders
 
@@ -81,16 +75,7 @@ Available in both `worktreeTemplate` and `branchTemplate`:
 
 ### Host-short aliases
 
-`{host-short}` looks up the current host in a JSON file. Two locations are read, merged with user-level winning:
-
-| Path | Notes |
-|---|---|
-| `/usr/share/fnrhombus/host-aliases.json` | System-wide, ships with [fnclaude](https://github.com/fnrhombus/fnclaude). Root-owned. |
-| `~/.local/share/fnrhombus/host-aliases.json` | User-level, optional override. Per-key precedence over the system file. |
-
-The plugin does **not** ship either file. Both missing → `{host-short}` errors when used, with instructions naming the two paths and a JSON example to copy.
-
-File format (either location):
+`{host-short}` looks up the current host in a built-in table of defaults:
 
 ```json
 {
@@ -101,7 +86,9 @@ File format (either location):
 }
 ```
 
-If your template doesn't reference `{host-short}`, the LUT is never read.
+`repos.hostAliases` in the shared config overrides these per key, and can add entries for hosts with no built-in default. A host with neither a built-in default nor a configured override errors when `{host-short}` is used, naming `repos.hostAliases` and the config file to add it to.
+
+If your template doesn't reference `{host-short}`, the table is never consulted.
 
 ### Defaults
 
@@ -129,9 +116,11 @@ If your repo has no `origin` remote and you use `{repo}`, the plugin falls back 
 Inside Claude Code:
 
 ```
-/plugin marketplace add fnrhombus/claude-plugins
-/plugin install claude-code-worktree-paths@fnrhombus-plugins
+/plugin marketplace add rhombus-rocks/claude-plugins
+/plugin install worktree-paths@rhombus-rocks-claude-plugins
 ```
+
+Formerly `claude-code-worktree-paths@fnrhombus-plugins`. If you have that installed, swap it: `claude plugin uninstall claude-code-worktree-paths@fnrhombus-plugins`, then `claude plugin marketplace add rhombus-rocks/claude-plugins` and install `worktree-paths@rhombus-rocks-claude-plugins` as above.
 
 ## License
 
